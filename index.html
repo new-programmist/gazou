@@ -8,45 +8,62 @@
   <h2>画像ファイルを選択してください。</h2>
   <input type="file" id="fileInput" />
   <button id="copyBtn" disabled>コピーする</button>
-  <pre id="result" style="white-space: pre-wrap; word-break: break-all; border: 1px solid #ccc; padding: 10px; margin-top: 10px;"></pre>
+  <button id="downloadBtn" disabled>ダウンロード</button>
+  <pre id="result" style="display:none;"></pre>
 
   <script>
     const fileInput = document.getElementById('fileInput');
-    const result = document.getElementById('result');
     const copyBtn = document.getElementById('copyBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    let currentSvg = '';
 
     fileInput.addEventListener('change', () => {
       const file = fileInput.files[0];
       if (!file) {
-        result.textContent = 'ファイルが選択されていません';
+        currentSvg = '';
         copyBtn.disabled = true;
+        downloadBtn.disabled = true;
         return;
       }
 
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result;
-        const wrapped = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="480" height="360" viewBox="0,0,480,360"><image x="0" y="0" transform="scale(0.5,0.5)" width="960" height="720" xlink:href="${dataUrl}"/></svg>`;
-        result.textContent = wrapped;
+        currentSvg = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="480" height="360" viewBox="0,0,480,360"><image x="0" y="0" transform="scale(0.5,0.5)" width="960" height="720" xlink:href="${dataUrl}"/></svg>`;
+
+        // 読み込み完了後にボタン有効化
         copyBtn.disabled = false;
+        downloadBtn.disabled = false;
       };
+
       reader.onerror = () => {
-        result.textContent = 'ファイルの読み込みに失敗しました';
+        currentSvg = '';
         copyBtn.disabled = true;
+        downloadBtn.disabled = true;
       };
 
       reader.readAsDataURL(file);
     });
 
     copyBtn.addEventListener('click', () => {
-      const text = result.textContent;
-      if (!text) return;
+      if (!currentSvg) return;
+      navigator.clipboard.writeText(currentSvg)
+        .then(() => alert('クリップボードにコピーしました！'))
+        .catch(() => alert('コピーに失敗しました。'));
+    });
 
-      navigator.clipboard.writeText(text).then(() => {
-        alert('クリップボードにコピーしました！');
-      }).catch(() => {
-        alert('コピーに失敗しました。');
-      });
+    downloadBtn.addEventListener('click', () => {
+      if (!currentSvg) return;
+      const blob = new Blob([currentSvg], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'image.svg';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     });
   </script>
 </body>
