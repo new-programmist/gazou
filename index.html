@@ -2,10 +2,10 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>画像をBase64文字列に変換してurl()形式にする</title>
+  <title>画像をBase64文字列に変換してSVG化する</title>
 </head>
 <body>
-  <h2>ファイルを選択してBase64のデータURLを url() 形式で取得</h2>
+  <h2>画像ファイルを選択してください。</h2>
   <input type="file" id="fileInput" />
   <button id="copyBtn" disabled>コピーする</button>
   <pre id="result" style="white-space: pre-wrap; word-break: break-all; border: 1px solid #ccc; padding: 10px; margin-top: 10px;"></pre>
@@ -26,7 +26,7 @@
       const reader = new FileReader();
       reader.onload = () => {
         const dataUrl = reader.result;
-        const wrapped = `url(${dataUrl})`;
+        const wrapped = `<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="480" height="360" viewBox="0,0,480,360"><image x="0" y="0" transform="scale(0.5,0.5)" width="960" height="720" xlink:href="${dataUrl}"/></svg>`;
         result.textContent = wrapped;
         copyBtn.disabled = false;
       };
